@@ -1,0 +1,12 @@
+name: receiver
+namespace: ""
+runtime: quarkus
+image: quay.io/jmayorgarh/receiver:latest
+imageDigest: sha256:c3825afa826d39e1089ce6047d19b627e5210b1bf8585569a4cc3ccc9511b331
+trigger: events
+builder: default
+builderMap:
+  default: quay.io/boson/faas-quarkus-jvm-builder
+  jvm: quay.io/boson/faas-quarkus-jvm-builder
+  native: quay.io/boson/faas-quarkus-native-builder
+envVars: {}

@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  mosquitto.conf: |
+    # This is a Mosquitto configuration file that creates a listener on port 1883
+    # that allows unauthenticated access.
+
+    listener 1883
+    allow_anonymous true
+    allow_zero_length_clientid true
+    socket_domain ipv4
+kind: ConfigMap
+metadata:
+  name: mosquitto-config

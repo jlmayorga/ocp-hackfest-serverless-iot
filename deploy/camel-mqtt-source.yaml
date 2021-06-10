@@ -1,0 +1,38 @@
+# Apache Camel MQTT Source
+#
+# Paho Component documentation: https://camel.apache.org/components/latest/paho-component.html
+#
+# List of available Apache Camel components: https://camel.apache.org/components/latest/
+#
+apiVersion: sources.knative.dev/v1alpha1
+kind: CamelSource
+metadata:
+  name: camel-mqtt-source
+spec:
+  source:
+    # To increase throughput, you can (optionally) read using multiple pods in parallel
+    integration:
+     replicas: 2
+    flow:
+      from:
+        # Specify here the topic to subscribe to
+        uri: paho:iot/#
+        parameters:
+          # URL of the MQTT source
+          brokerUrl: tcp://eclipse-mosquitto-tcp.iot-serverless.svc.cluster.local:1883
+          # A unique client ID for the source
+          clientId: mqtt-knative-bridge
+        steps:
+          - set-header:
+              name: ce-type
+              constant: iot.message
+          - set-header:
+              name: Content-Type
+              constant: application/json
+          - log:
+              message: "Forwarding: ${body}"
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default

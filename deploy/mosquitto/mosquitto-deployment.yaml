@@ -1,0 +1,79 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: eclipse-mosquitto
+spec:
+  replicas: 1
+  strategy:
+    type: Rolling
+  selector:
+    name: eclipse-mosquitto
+  template:
+    metadata:
+      name: eclipse-mosquitto
+      labels:
+        name: eclipse-mosquitto
+    spec:
+      containers:
+        - name: eclipse-mosquitto
+          image: eclipse-mosquitto:2.0.10
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1883 
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            successThreshold: 1
+            tcpSocket:
+              port: 1883
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 1883
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 128Mi
+          securityContext:
+            privileged: false
+          volumeMounts:
+            - mountPath: /mosquitto/config/
+              name: mosquitto-config-volume
+      volumes:
+        - name: mosquitto-config-volume
+          configMap:
+            name: mosquitto-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: eclipse-mosquitto-tcp
+spec:
+  ports:
+    - name: eclipse-mosquitto-tcp
+      port: 1883
+      protocol: TCP
+      targetPort: 1883
+  selector:
+    name: eclipse-mosquitto
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: eclipse-mosquitto-tcp
+spec:
+  port:
+    targetPort: 1883
+#  tls:
+#    termination: passthrough
+  to:
+    kind: Service
+    name: eclipse-mosquitto-tcp
+    weight: 100
+  wildcardPolicy: None
